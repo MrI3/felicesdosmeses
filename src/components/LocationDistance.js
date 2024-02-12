@@ -15,7 +15,7 @@ const LocationDistance = ({ targetLatitude, targetLongitude }) => {
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude, accuracy } = position.coords;
-          if (accuracy < bestAccuracy && bestAccuracy <= 200) {
+          if (accuracy < bestAccuracy && accuracy <= 200) {
             setBestAccuracy(accuracy);
             setBestPosition({ latitude, longitude });
           }
