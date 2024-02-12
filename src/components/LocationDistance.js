@@ -75,6 +75,7 @@ const LocationDistance = ({ targetLatitude, targetLongitude }) => {
         <p>{error}</p>
       ) : (
         <div>
+          <p>Amo a Neidy</p>
           <p>Best Accuracy: {bestAccuracy.toFixed(2)} meters</p>
           <p>Distance to the North: {distance.north.toFixed(2)} meters</p>
           <p>Distance to the South: {distance.south.toFixed(2)} meters</p>
