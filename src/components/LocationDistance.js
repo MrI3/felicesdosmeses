@@ -15,7 +15,7 @@ const LocationDistance = ({ targetLatitude, targetLongitude }) => {
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude, accuracy } = position.coords;
-          if (accuracy < bestAccuracy) {
+          if (accuracy < bestAccuracy && accuracy <= 1.5 * bestAccuracy) {
             setBestAccuracy(accuracy);
             setBestPosition({ latitude, longitude });
           }
@@ -32,7 +32,7 @@ const LocationDistance = ({ targetLatitude, targetLongitude }) => {
         console.log(bestPosition);
         calculateDistance(bestPosition.latitude, bestPosition.longitude);
       }
-    }, 100); // Update every second
+    }, 250); // Update every second
 
     // Cleanup function to clear the watchPosition and interval
     return () => {
@@ -75,7 +75,6 @@ const LocationDistance = ({ targetLatitude, targetLongitude }) => {
         <p>{error}</p>
       ) : (
         <div>
-          <p>Amo a Neidy</p>
           <p>Best Accuracy: {bestAccuracy.toFixed(2)} meters</p>
           <p>Distance to the North: {distance.north.toFixed(2)} meters</p>
           <p>Distance to the South: {distance.south.toFixed(2)} meters</p>
