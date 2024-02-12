@@ -32,7 +32,7 @@ const LocationDistance = ({ targetLatitude, targetLongitude }) => {
         console.log(bestPosition);
         calculateDistance(bestPosition.latitude, bestPosition.longitude);
       }
-    }, 10); // Update every second
+    }, 100); // Update every second
 
     // Cleanup function to clear the watchPosition and interval
     return () => {
