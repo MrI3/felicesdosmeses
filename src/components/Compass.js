@@ -40,7 +40,7 @@ const Compass = () => {
 
   return (
     <div style={{ transform: `rotate(${angle - 180}deg)` }}>
-      <img src="path_to_your_arrow_image" alt="Arrow pointing south" />
+      <img src={arrow} alt="Arrow pointing south" />
     </div>
   );
 };
