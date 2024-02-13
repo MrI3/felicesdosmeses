@@ -1,88 +1,56 @@
 import React, { useState, useEffect } from 'react';
 
-const LocationDistance = ({ targetLatitude, targetLongitude }) => {
-  const [distance, setDistance] = useState({ north: 0, south: 0, east: 0, west: 0 });
-  const [error, setError] = useState('');
-  const [bestAccuracy, setBestAccuracy] = useState(Number.MAX_VALUE);
-  const [bestPosition, setBestPosition] = useState(null);
+const LocationDirection = ({ targetLatitude, targetLongitude }) => {
+  const [userPosition, setUserPosition] = useState({ latitude: 0, longitude: 0 });
+  const [bearing, setBearing] = useState(0);
 
   useEffect(() => {
-    let watchId;
+    let watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setUserPosition({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        const newBearing = calculateBearing(position.coords.latitude, position.coords.longitude, targetLatitude, targetLongitude);
+        setBearing(newBearing);
+      },
+      (error) => {
+        console.error('Error occurred: ' + error.message);
+      },
+      { enableHighAccuracy: true }
+    );
 
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser');
-    } else {
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          if (accuracy < bestAccuracy && accuracy <= 200) {
-            setBestAccuracy(accuracy);
-            setBestPosition({ latitude, longitude });
-          }
-        },
-        (err) => {
-          setError('Error occurred: ' + err.message);
-        },
-        { enableHighAccuracy: true }
-      );
-    }
-
-    const intervalId = setInterval(() => {
-      if (bestPosition) {
-        console.log(bestPosition);
-        calculateDistance(bestPosition.latitude, bestPosition.longitude);
-      }
-    }, 100); // Update every second
-
-    // Cleanup function to clear the watchPosition and interval
     return () => {
-      if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-      clearInterval(intervalId);
+      navigator.geolocation.clearWatch(watchId);
     };
-  }, [bestPosition]);
+  }, [targetLatitude, targetLongitude]);
 
-  const calculateDistance = (userLatitude, userLongitude) => {
-    const earthRadius = 6371e3; // meters
-    const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
-      const toRadians = degree => degree * Math.PI / 180;
-      const deltaLat = toRadians(lat2 - lat1);
-      const deltaLon = toRadians(lon2 - lon1);
-      
-      const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-                Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-                Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      
-      return earthRadius * c;
-    };
-  
-    const distances = {
-      north: (targetLatitude > userLatitude) ? calculateHaversineDistance(userLatitude, userLongitude, targetLatitude, userLongitude) : 0,
-      south: (targetLatitude < userLatitude) ? calculateHaversineDistance(userLatitude, userLongitude, targetLatitude, userLongitude) : 0,
-      east: (targetLongitude > userLongitude) ? calculateHaversineDistance(userLatitude, userLongitude, userLatitude, targetLongitude) : 0,
-      west: (targetLongitude < userLongitude) ? calculateHaversineDistance(userLatitude, userLongitude, userLatitude, targetLongitude) : 0,
-    };
-  
-    setDistance(distances);
-  };  
+  function calculateBearing(startLat, startLng, destLat, destLng){
+    startLat = toRadians(startLat);
+    startLng = toRadians(startLng);
+    destLat = toRadians(destLat);
+    destLng = toRadians(destLng);
+
+    const y = Math.sin(destLng - startLng) * Math.cos(destLat);
+    const x = Math.cos(startLat) * Math.sin(destLat) -
+              Math.sin(startLat) * Math.cos(destLat) * Math.cos(destLng - startLng);
+    const bearing = Math.atan2(y, x);
+    return (toDegrees(bearing) + 360) % 360;
+}
+
+function toRadians(degrees) {
+  return degrees * Math.PI / 180;
+}
+
+function toDegrees(radians) {
+  return radians * 180 / Math.PI;
+}
 
   return (
-    <div>
-      {error ? (
-        <p>{error}</p>
-      ) : (
-        <div>
-          <p>Best Accuracy: {bestAccuracy.toFixed(2)} meters</p>
-          <p>Distance to the North: {distance.north.toFixed(2)} meters</p>
-          <p>Distance to the South: {distance.south.toFixed(2)} meters</p>
-          <p>Distance to the East: {distance.east.toFixed(2)} meters</p>
-          <p>Distance to the West: {distance.west.toFixed(2)} meters</p>
-        </div>
-      )}
+    <div style={{ transform: `rotate(${bearing}deg)`, width: '150px', height: '100px', backgroundColor:'red'}}>
+      {/* Arrow image or CSS-styled arrow here */}
     </div>
   );
 };
 
-export default LocationDistance;
+export default LocationDirection;
